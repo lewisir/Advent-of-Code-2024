@@ -43,9 +43,8 @@ def similarity_score(list_1, list_2):
 def difference_sum(list_1, list_2):
     """Given two lists of integers, return the sum of the absolute differences between the elements of the two lists"""
     sum_diff = 0
-    for i, x in enumerate(list_1):
-        diff = abs(list_1[i] - list_2[i])
-        sum_diff += diff
+    for pair in zip(list_1, list_2):
+        sum_diff += abs(pair[0] - pair[1])
     return sum_diff
 
 
