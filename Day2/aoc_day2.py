@@ -44,18 +44,6 @@ def check_report(report):
     return True
 
 
-def check_next_number(report, i, sign_check):
-    """check the number at i+1 with i-1"""
-    if i + 1 == len(report):
-        return True
-    diff = report[i - 1] - report[i + 1]
-    if not check_in_range(diff):
-        return False
-    if diff * sign_check < 0:
-        return False
-    return True
-
-
 def check_in_range(diff):
     """return False if the difference between the two values is out of range"""
     if abs(diff) < MIN or abs(diff) > MAX:
