@@ -30,6 +30,11 @@ def main():
     for pair in number_pairs:
         sum += pair[0] * pair[1]
     print(f"Part I Sum result = {sum}")
+    number_pairs = process_string_with_do(input_string)
+    sum = 0
+    for pair in number_pairs:
+        sum += pair[0] * pair[1]
+    print(f"Part II Sum result = {sum}")
 
 
 def process_string(test_string):
@@ -40,6 +45,22 @@ def process_string(test_string):
         mul_pair = extract_number_pair(x)
         if mul_pair:
             number_pairs.append(mul_pair)
+    return number_pairs
+
+
+def process_string_with_do(test_string):
+    """return the pairs of numbers that are parts of a valid mul() function"""
+    number_pairs = []
+    temp_list = test_string.split("mul(")
+    do = True
+    for i, x in enumerate(temp_list):
+        mul_pair = extract_number_pair(x)
+        if mul_pair and do:
+            number_pairs.append(mul_pair)
+        if x.find("do()") >= 0:
+            do = True
+        if x.find("don't()") >= 0:
+            do = False
     return number_pairs
 
 
