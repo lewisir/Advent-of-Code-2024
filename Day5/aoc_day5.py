@@ -6,7 +6,7 @@ https://adventofcode.com/2024/day/5
 
 from time import perf_counter
 
-TEST = False
+TEST = True
 
 DAY = "5"
 REAL_INPUT = "Advent-of-Code-2024/Day" + DAY + "/input_day" + DAY + ".txt"
@@ -23,27 +23,74 @@ def main():
     data = get_input_data(FILENAME)
     order_rules, page_sequences = process_input_data(data)
     page_number_sum = 0
+    incorrect_sequences = []
     for sequence in page_sequences:
         if check_valid_sequence(sequence, order_rules):
             page_number_sum += int(sequence[len(sequence) // 2])
-    print(f"Prt I - Middle Page Sum - {page_number_sum}")
+        else:
+            incorrect_sequences.append(sequence)
+    print(f"Part I - Middle Page Sum - {page_number_sum}")
+    page_number_sum = 0
+    for seq in incorrect_sequences:
+        ordered_seq = create_ordered_seq(seq, order_rules)
+        page_number_sum += int(ordered_seq[len(sequence) // 2])
+    print(f"Part II - Middle Page Sum - {page_number_sum}")
 
 
 def check_valid_sequence(sequence, order_rules):
-    """Return True is  the sequence of page numbers adheres to the order rules"""
+    """Return True if the sequence of page numbers adheres to the order rules"""
     for index, page in enumerate(sequence):
-        if index == len(sequence) - 1:
-            return True
-        for scd_idx, next_page in enumerate(sequence[index + 1 :]):
-            if scd_idx == len(sequence[index + 1 :]) - 1:
-                pass
-            if next_page not in order_rules.keys():
+        for next_page in sequence[index + 1 :]:
+            if next_page not in order_rules[page]:
                 return False
-            elif next_page not in order_rules[page]:
-                return False
-            else:
-                pass
     return True
+
+
+def create_ordered_seq(seq, order_rules):
+    """From the provided sequence, order it according to the order rules"""
+    # First generate a specific order rules for this sequence (remove the numbers that are not needed from the order rules)
+    specific_order_rules = prune_order_rules(seq, order_rules)
+    ordered_sequence = order_sequence(specific_order_rules)
+    return ordered_sequence
+
+
+def prune_order_rules(seq, order_rules):
+    """return the order rules that only contain the numbers in the sequence"""
+    all_values = order_rules.keys()
+    specific_rules = {}
+    for key in seq:
+        specific_rules[key] = order_rules[key]
+    for key, rule in specific_rules.items():
+        for value in all_values:
+            if value not in seq:
+                try:
+                    rule.remove(value)
+                except:
+                    pass
+    return specific_rules
+
+
+def update_sequence_order(sequence, complete_correct_sequence):
+    """return a corrected sequence"""
+    correct_sequence = complete_correct_sequence.copy()
+    keep_elements = set(sequence)
+    all_elements = set(complete_correct_sequence)
+    elements_to_remove = all_elements - keep_elements
+    for element in elements_to_remove:
+        correct_sequence.remove(element)
+    return correct_sequence
+
+
+def order_sequence(order_rules):
+    """Return a list of all elements in order according to the rules"""
+    value_len_dict = {}
+    value_sequence = ["_" for i in range(len(order_rules))]
+    for key in order_rules:
+        value_len = len(order_rules[key])
+        value_len_dict[key] = value_len
+    for key, value in value_len_dict.items():
+        value_sequence[value] = key
+    return value_sequence
 
 
 def process_input_data(data):
@@ -67,6 +114,8 @@ def update_page_order_rules(rule, order_rules):
         order_rules[key] = [value]
     else:
         order_rules[key].append(value)
+    if value not in order_rules.keys():
+        order_rules[value] = []
     return order_rules
 
 
