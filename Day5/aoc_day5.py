@@ -6,7 +6,7 @@ https://adventofcode.com/2024/day/5
 
 from time import perf_counter
 
-TEST = True
+TEST = False
 
 DAY = "5"
 REAL_INPUT = "Advent-of-Code-2024/Day" + DAY + "/input_day" + DAY + ".txt"
@@ -33,7 +33,8 @@ def main():
     page_number_sum = 0
     for seq in incorrect_sequences:
         ordered_seq = create_ordered_seq(seq, order_rules)
-        page_number_sum += int(ordered_seq[len(sequence) // 2])
+        delta = int(ordered_seq[len(seq) // 2])
+        page_number_sum += int(ordered_seq[len(seq) // 2])
     print(f"Part II - Middle Page Sum - {page_number_sum}")
 
 
@@ -59,14 +60,11 @@ def prune_order_rules(seq, order_rules):
     all_values = order_rules.keys()
     specific_rules = {}
     for key in seq:
-        specific_rules[key] = order_rules[key]
+        specific_rules[key] = order_rules[key].copy()
     for key, rule in specific_rules.items():
         for value in all_values:
-            if value not in seq:
-                try:
-                    rule.remove(value)
-                except:
-                    pass
+            if value in rule and value not in seq:
+                rule.remove(value)
     return specific_rules
 
 
