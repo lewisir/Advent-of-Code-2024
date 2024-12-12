@@ -5,6 +5,7 @@ https://adventofcode.com/2024/day/6
 """
 
 from time import perf_counter
+import sys
 
 TEST = False
 
@@ -26,6 +27,7 @@ def main():
     data = get_input_data(FILENAME)
     guard_map = process_data(data)
     guard_position = locate_guard(guard_map)
+    start_position = guard_position
     guard_facing = "N"
     guard_on_map = True
     guard_points = set(())
@@ -42,6 +44,57 @@ def main():
         else:
             pass
     print(f"Part I - Number of Guard Points - {len(guard_points)}")
+    guard_points.remove(start_position)
+    loop_count = 0
+    point_count = 0
+    for point in guard_points:
+        point_count += 1
+        # print(f"Count - {point_count} for point {point}")
+        if check_for_loop(guard_map, start_position, point):
+            loop_count += 1
+    print(f"Part II - Number of Loops - {loop_count}")
+    # check_for_loop(guard_map, start_position, (5, 73))
+
+
+def check_for_loop(guard_map, start_position, point):
+    """Count the loops if we add an obstacle at the provided point"""
+    guard_map[point[0]][point[1]] = "#"
+    guard_position = start_position
+    guard_facing = "N"
+    guard_on_map = True
+    guard_path = set(())
+    while guard_on_map:
+        # if len(guard_path) > 1709:  # issue at point (5,73) again
+        #    print(
+        #        f"guard {guard_position},{guard_facing} with length {len(guard_path)}"
+        #    )
+        check_move = check_next_move(guard_map, guard_position, guard_facing)
+        if check_move == "forward":
+            guard_path.add((guard_position, guard_facing))
+            guard_position = add_points(guard_position, MOVE[guard_facing])
+            if (
+                guard_position,
+                guard_facing,
+            ) in guard_path:
+                guard_on_map = False
+                guard_map[point[0]][point[1]] = "."
+                return True
+        elif check_move == "turn":
+            guard_facing = TURN_RIGHT[guard_facing]
+            if (
+                guard_position,
+                guard_facing,
+            ) in guard_path:
+                guard_on_map = False
+                guard_map[point[0]][point[1]] = "."
+                return True
+            guard_path.add((guard_position, guard_facing))
+        elif check_move == "off_map":
+            guard_on_map = False
+            guard_map[point[0]][point[1]] = "."
+        else:
+            pass
+    return False
 
 
 def check_next_move(guard_map, guard_position, guard_facing):
@@ -87,8 +140,8 @@ def process_data(data):
     """process the data and return a 2D map"""
     guard_map = []
     for line in data:
-        guard_map.append(tuple(line))
-    return tuple(guard_map)
+        guard_map.append(list(line))
+    return guard_map
 
 
 def get_input_data(filename):
@@ -104,3 +157,15 @@ if __name__ == "__main__":
     start_time = perf_counter()
     main()
     print(f"-- Time Taken {perf_counter() - start_time}")
+
+
+# EXAMPLE BELOW
+"""
+  71  72  73 
+4  .   #   .
+5  >   .   #
+6  #   .   #
+7  #   #   .
+When the guard is at (5,71) heading East they end up bouncing between (5,72),S and (6,72),N
+But the point that is checked is (5,72),N and (6,72),S
+"""
