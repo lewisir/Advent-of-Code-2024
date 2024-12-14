@@ -48,12 +48,9 @@ def main():
     loop_count = 0
     point_count = 0
     for point in guard_points:
-        point_count += 1
-        # print(f"Count - {point_count} for point {point}")
         if check_for_loop(guard_map, start_position, point):
             loop_count += 1
     print(f"Part II - Number of Loops - {loop_count}")
-    # check_for_loop(guard_map, start_position, (5, 73))
 
 
 def check_for_loop(guard_map, start_position, point):
@@ -64,10 +61,6 @@ def check_for_loop(guard_map, start_position, point):
     guard_on_map = True
     guard_path = set(())
     while guard_on_map:
-        # if len(guard_path) > 1709:  # issue at point (5,73) again
-        #    print(
-        #        f"guard {guard_position},{guard_facing} with length {len(guard_path)}"
-        #    )
         check_move = check_next_move(guard_map, guard_position, guard_facing)
         if check_move == "forward":
             guard_path.add((guard_position, guard_facing))
@@ -157,15 +150,3 @@ if __name__ == "__main__":
     start_time = perf_counter()
     main()
     print(f"-- Time Taken {perf_counter() - start_time}")
-
-
-# EXAMPLE BELOW
-"""
-  71  72  73 
-4  .   #   .
-5  >   .   #
-6  #   .   #
-7  #   #   .
-When the guard is at (5,71) heading East they end up bouncing between (5,72),S and (6,72),N
-But the point that is checked is (5,72),N and (6,72),S
-"""
