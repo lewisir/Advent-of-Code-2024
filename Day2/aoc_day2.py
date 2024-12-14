@@ -30,6 +30,26 @@ def main():
             safe_report_count += 1
     print(f"Part I - Number of Safe Reports - {safe_report_count}")
 
+    safe_report_count = 0
+    for report in process_data(data):
+        if check_report(report):
+            safe_report_count += 1
+        else:
+            for i in range(len(report)):
+                if check_report(rem_index(report, i)):
+                    safe_report_count += 1
+                    break
+    print(f"Part II - Number of Safe Reports - {safe_report_count}")
+
+
+def rem_index(temp_list, index):
+    """return a new list with the item as the index position removed from the temp_list"""
+    return_list = []
+    for i, x in enumerate(temp_list):
+        if i != index:
+            return_list.append(x)
+    return return_list
+
 
 def check_report(report):
     """Check the sequence of numbers in the report to ensure they adhere to the safe rules"""
