@@ -5,6 +5,7 @@ https://adventofcode.com/2024/day/7
 """
 
 from time import perf_counter
+import math
 
 TEST = False
 
@@ -28,6 +29,14 @@ def main():
         if perm_calculation(target, sequence):
             result_sum += target
     print(f"Part I Result Sum {result_sum}")
+    result_sum = 0
+    for equation in calibration_data:
+        target, sequence = equation
+        if perm_calculation(target, sequence):
+            result_sum += target
+        elif calculate_total(target, sequence):
+            result_sum += target
+    print(f"Part II Result Sum {result_sum}")
 
 
 def perm_calculation(target, sequence):
@@ -45,6 +54,48 @@ def perm_calculation(target, sequence):
         if calc_result == target:
             return True
     return False
+
+
+def calculate_total(target, sequence, position=0, running_total=0, operator="concat"):
+    """Check whether the sequence can reach the target"""
+    if position == 0:
+        running_total = sequence[position]
+    else:
+        number = sequence[position]
+        running_total = operation(running_total, operator, number)
+    position += 1
+    if position == len(sequence) and running_total == target:
+        return True
+    elif running_total > target:
+        return False
+    elif position == len(sequence):
+        return False
+    else:
+        if calculate_total(
+            target, sequence, position, running_total, operator="concat"
+        ):
+            return True
+        elif calculate_total(
+            target, sequence, position, running_total, operator="multiply"
+        ):
+            return True
+        elif calculate_total(target, sequence, position, running_total, operator="add"):
+            return True
+    return False
+
+
+def operation(running_total, operator, number):
+    """return the updated running total having carried out the operation"""
+    if operator == "concat":
+        power = math.floor(math.log10(number)) + 1
+        running_total = running_total * 10**power + number
+        return running_total
+    elif operator == "multiply":
+        running_total *= number
+        return running_total
+    elif operator == "add":
+        running_total += number
+        return running_total
 
 
 def process_data(data):
