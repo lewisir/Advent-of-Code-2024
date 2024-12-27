@@ -21,8 +21,8 @@ else:
 def main():
     """Main program"""
     data = get_input_data(FILENAME)
-    max_y = len(data) - 1
-    max_x = len(data[0]) - 1
+    max_y = len(data)
+    max_x = len(data[0])
     antennas = extract_antenna(data)
     antinodes = set()
     for antenna in antennas.values():
@@ -37,6 +37,15 @@ def main():
         if check_in_range(max_y, max_x, antinode):
             count += 1
     print(f"Part I - Number of Antinodes {count}")
+
+    part_ii_antinodes = set()
+    for antenna in antennas.values():
+        antenna_pairs = loop_through_pairs(antenna)
+        for pair in antenna_pairs:
+            part_ii_antinodes.update(
+                calculate_extended_antinodes(pair[0], pair[1], max_y, max_x)
+            )
+    print(f"Part II - Number of antinodes {len(part_ii_antinodes)}")
 
 
 def loop_through_pairs(pairs):
@@ -74,12 +83,41 @@ def calculate_antinodes(point1, point2):
     return antinode1, antinode2
 
 
+def calculate_extended_antinodes(point1, point2, max_y, max_x):
+    """Extend the antinodes across the whole map and return the set of antinodes for the pair of points"""
+    y1, x1 = point1
+    y2, x2 = point2
+    extended_antinodes = set()
+    fwd_vector = (y1 - y2, x1 - x2)
+    bkw_vector = (y2 - y1, x2 - x1)
+    antinode = point1
+    on_map = True
+    while on_map:
+        extended_antinodes.add(antinode)
+        antinode = add_points(antinode, fwd_vector)
+        on_map = check_in_range(max_y, max_x, antinode)
+    antinode = point2
+    on_map = True
+    while on_map:
+        extended_antinodes.add(antinode)
+        antinode = add_points(antinode, bkw_vector)
+        on_map = check_in_range(max_y, max_x, antinode)
+    return extended_antinodes
+
+
+def add_points(point, vector):
+    """Return the new point having been updated by the vector"""
+    y, x = point
+    vy, vx = vector
+    return (y + vy, x + vx)
+
+
 def check_in_range(max_y, max_x, point):
     """Retrun True if the point is in the range"""
     y, x = point
-    if y < 0 or y > max_y:
+    if y < 0 or y >= max_y:
         return False
-    if x < 0 or x > max_x:
+    if x < 0 or x >= max_x:
         return False
     return True
 
