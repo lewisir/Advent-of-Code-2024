@@ -22,6 +22,16 @@ END = 9
 DIRECTIONS = [(-1,0), (1,0), (0,1), (0,-1)]
 TEST1 = ['1190119','1111198','1112117','6543456','7651987','8761111','9871111']
 TEST2 = ['1011911','2111811','3111711','4567654','1118113','1119112','1111101']
+TEST3 = ['9999909','9943219','9959929','1165431','1171141','1187651','1191111']
+TEST4 = ['5590559','5551598','1192997','6543456','7651987','8761111','9871111']
+TEST5 = ['012345','123456','234567','345678','416789','567891']
+
+
+
+
+
+
+
 
 def main():
     """Main program"""
@@ -33,6 +43,25 @@ def main():
         new_trails = explore_trail(trailhead,topographic_map,set())
         trail_count += len(new_trails)
     print(f"Part I Trail Count = {trail_count}")
+
+    trail_count = 0
+    for trailhead in trailheads:
+        trail_count += count_trails(trailhead,topographic_map,0)
+    print(f"Part II Trail Count = {trail_count}") 
+
+def count_trails(position, topographic_map, trail_count):
+    """For the fiven position count the number of paths to the trail end"""
+    if topographic_map[position[0]][position[1]] == END:
+        trail_count += 1
+        return trail_count
+    else:
+        for direction in DIRECTIONS:
+            current_height = topographic_map[position[0]][position[1]]
+            new_position = update_position(position,direction)
+            if check_position(new_position,topographic_map):
+                if topographic_map[new_position[0]][new_position[1]]-current_height == 1:
+                    trail_count  = count_trails(new_position,topographic_map,trail_count)
+        return trail_count
 
 def explore_trail(position, topographic_map, end_points):
     """for the given position explore to find the number of good trails"""
