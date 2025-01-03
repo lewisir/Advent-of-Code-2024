@@ -19,6 +19,7 @@ else:
 
 BLINKS = 25
 
+TEST = "0"
 
 
 def main():
@@ -30,32 +31,35 @@ def main():
         stone_list = process_stone_list(stone_list)
     print(f"Part I - Number of stones after {BLINKS} blinks is {len(stone_list)}")
 
+
 def process_stone_list(stone_list):
     """Process each stone in the stone list and return a new updated stone list"""
     new_stone_list = []
     for position, stone in enumerate(stone_list):
         if int(stone) == 0:
-            new_stone_list.append('1')
-        elif len(stone)%2 == 0:
+            new_stone_list.append("1")
+        elif len(stone) % 2 == 0:
             left_half, right_half = split_stone(stone)
             new_stone_list.append(left_half)
             new_stone_list.append(right_half)
         else:
-            new_stone_list.append(str(int(stone)*2024))
+            new_stone_list.append(str(int(stone) * 2024))
     return new_stone_list
 
 
 def split_stone(stone):
     """Split the stone in to parts, left and right and remove leading zeros"""
-    left_half = stone[:len(stone)//2]
-    right_half = stone[len(stone)//2:]
+    left_half = stone[: len(stone) // 2]
+    right_half = stone[len(stone) // 2 :]
     left_half = remove_leading_zeros(left_half)
     right_half = remove_leading_zeros(right_half)
     return left_half, right_half
 
+
 def remove_leading_zeros(text_number):
     """remove leading zeros from the text number"""
     return str(int(text_number))
+
 
 def get_input_data(filename):
     """function to read in the input data"""
