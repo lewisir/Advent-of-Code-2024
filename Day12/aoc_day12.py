@@ -18,8 +18,13 @@ else:
     FILENAME = REAL_INPUT
 
 
-TEST1 = ["AAAA", "BBCD", "BBCC", "EEEC"]
 DIRECTIONS = ((0, 1), (1, 0), (-1, 0), (0, -1))
+
+TEST1 = ["AAAA", "BBCD", "BBCC", "EEEC"]
+
+TEST2 = ["EEEEE", "EXXXX", "EEEEE", "EXXXX", "EEEEE"]
+
+TEST3 = ["AAAAAA", "AAABBA", "AAABBA", "ABBAAA", "ABBAAA", "AAAAAA"]
 
 
 def main():
@@ -37,6 +42,11 @@ def main():
         fencing += len(region) * calculate_perimeter(region)
     print(f"Part I Fencing required = {fencing}")
 
+    sides = 0
+    for region in all_regions:
+        sides += len(region) * calculate_sides(region)
+    print(f"Part II Fencing with discount = {sides} ")
+
 
 def calculate_perimeter(region):
     """Given the coordinates of the points in the region, calculate the perimeter"""
@@ -47,6 +57,15 @@ def calculate_perimeter(region):
             if are_neighbours(plot, neighbour):
                 perimeter -= 1
     return perimeter
+
+
+def calculate_sides(region):
+    """Given th coordinates of the points in the region, calculate the sides/corners"""
+    sides = 0
+    for plot in region:
+        sides += count_external_corners(plot, region)
+        sides += count_internal_corners(plot, region)
+    return sides
 
 
 def are_neighbours(position1, position2):
@@ -94,6 +113,36 @@ def get_neighbouring_plots(garden, plot, plant_type):
 def update_position(position, vector):
     """update the new position based on the vector"""
     return (position[0] + vector[0], position[1] + vector[1])
+
+
+def count_internal_corners(plot, region):
+    """Return the number of internal corners at the plot"""
+    corner_count = 0
+    y, x = plot
+    if (y, x - 1) in region and (y - 1, x) in region and (y - 1, x - 1) not in region:
+        corner_count += 1
+    if (y - 1, x) in region and (y, x + 1) in region and (y - 1, x + 1) not in region:
+        corner_count += 1
+    if (y, x + 1) in region and (y + 1, x) in region and (y + 1, x + 1) not in region:
+        corner_count += 1
+    if (y + 1, x) in region and (y, x - 1) in region and (y + 1, x - 1) not in region:
+        corner_count += 1
+    return corner_count
+
+
+def count_external_corners(plot, region):
+    """Return the number of external corners at the plot"""
+    corner_count = 0
+    y, x = plot
+    if (y, x - 1) not in region and (y - 1, x) not in region:
+        corner_count += 1
+    if (y - 1, x) not in region and (y, x + 1) not in region:
+        corner_count += 1
+    if (y, x + 1) not in region and (y + 1, x) not in region:
+        corner_count += 1
+    if (y + 1, x) not in region and (y, x - 1) not in region:
+        corner_count += 1
+    return corner_count
 
 
 def get_input_data(filename):
