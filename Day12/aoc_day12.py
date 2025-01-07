@@ -88,9 +88,9 @@ def find_garden_region(garden, plot):
     while next_plots:
         current_plot = next_plots.pop()
         region.add(current_plot)
-        for next in get_neighbouring_plots(garden, current_plot, plant_type):
-            if next not in region:
-                next_plots.append(next)
+        for neighbour_plot in get_neighbouring_plots(garden, current_plot, plant_type):
+            if neighbour_plot not in region:
+                next_plots.append(neighbour_plot)
     return region
 
 
