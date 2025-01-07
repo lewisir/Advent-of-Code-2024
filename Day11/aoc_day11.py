@@ -17,19 +17,28 @@ if TEST:
 else:
     FILENAME = REAL_INPUT
 
-BLINKS = 25
-
-TEST = "0"
+BLINKS = 75
 
 
 def main():
     """Main program"""
     data = get_input_data(FILENAME)
     stone_list = data[0].split()
+    # for _ in range(BLINKS):
+    #    stone_list = process_stone_list(stone_list)
+    # print(f"Part I - Number of stones after {BLINKS} blinks is {len(stone_list)}")
+    stone_tally = {}
+    for stone in stone_list:
+        if stone in stone_tally:
+            stone_tally[stone] += 1
+        else:
+            stone_tally[stone] = 1
     for _ in range(BLINKS):
-        # print(stone_list)
-        stone_list = process_stone_list(stone_list)
-    print(f"Part I - Number of stones after {BLINKS} blinks is {len(stone_list)}")
+        stone_tally = blink_stones(stone_tally)
+    total_stones = 0
+    for stones in stone_tally.values():
+        total_stones += stones
+    print(f"Total Stones {total_stones}")
 
 
 def process_stone_list(stone_list):
@@ -45,6 +54,19 @@ def process_stone_list(stone_list):
         else:
             new_stone_list.append(str(int(stone) * 2024))
     return new_stone_list
+
+
+def blink_stones(stone_tally):
+    """Process the stones in the stone tally and return a new stone tally with the count of the stones"""
+    stone_count = {}
+    for stone in stone_tally:
+        new_stones = process_stone_list([stone])
+        for new_stone in new_stones:
+            if new_stone in stone_count:
+                stone_count[new_stone] += stone_tally[stone]
+            else:
+                stone_count[new_stone] = stone_tally[stone]
+    return stone_count
 
 
 def split_stone(stone):
