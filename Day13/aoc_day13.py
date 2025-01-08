@@ -17,6 +17,8 @@ if TEST:
 else:
     FILENAME = REAL_INPUT
 
+UNIT_ERROR = 10000000000000
+
 
 def main():
     """Main program"""
@@ -29,6 +31,15 @@ def main():
             a, b = result
             token_count += 3 * a + b
     print(f"Part I Tokens = {token_count}")
+
+    claw_machine_data = process_data(data, UNIT_ERROR)
+    token_count = 0
+    for machine in claw_machine_data:
+        result = sim_equ(machine)
+        if result is not None:
+            a, b = result
+            token_count += 3 * a + b
+    print(f"Part II Tokens = {token_count}")
 
 
 def sim_equ(input_variables):
@@ -48,13 +59,13 @@ def sim_equ(input_variables):
     )
     x_test = a * but_a_x + b * but_b_x
     y_test = a * but_a_y + b * but_b_y
-    if a < 0 or b < 0 or a > 100 or b > 100 or x_test != target_x or y_test != target_y:
+    if a < 0 or b < 0 or x_test != target_x or y_test != target_y:
         return None
     else:
         return a, b
 
 
-def process_data(data):
+def process_data(data, unit_error=0):
     """Process the data to return the claw machine information; location of prize and function of buttons"""
     claw_machine_data = []
     for line in data:
@@ -66,8 +77,8 @@ def process_data(data):
         elif line.find("Prize") == 0:
             target_x, target_y = extract_x_y_data(line)
             claw_machine_data[-1] = (
-                target_x,
-                target_y,
+                target_x + unit_error,
+                target_y + unit_error,
                 but_a_x,
                 but_a_y,
                 but_b_x,
