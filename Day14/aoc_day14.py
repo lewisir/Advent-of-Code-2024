@@ -19,8 +19,6 @@ else:
 
 WIDTH = 101
 HEIGHT = 103
-# WIDTH = 11
-# HEIGHT = 7
 TIME = 100
 
 
@@ -33,7 +31,6 @@ def main():
         position = (robot[0], robot[1])
         velocity = (robot[2], robot[3])
         final_positions.append(wrap_coordinates(move_robot(position, velocity, TIME)))
-    print(final_positions)
     quadrant_counts = count_robots_by_quadrant(final_positions)
     safety_factor = (
         quadrant_counts[0]
