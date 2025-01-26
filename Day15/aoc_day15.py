@@ -5,7 +5,6 @@ https://adventofcode.com/2024/day/15
 """
 
 from time import perf_counter
-from pprint import pprint
 
 TEST = False
 
@@ -38,24 +37,96 @@ def main():
                 warehouse_map = move_box(warehouse_map, position, box_dest)
     print(f"Part I Sum of all box's GPS = {calculate_gps(warehouse_map)}")
 
+    warehouse_map, robot_moves = process_input_data(data)
+    exp_wh_map = expand_map(warehouse_map)
+    position = locate_robot(exp_wh_map)
+    lh_box_points = extract_positions(exp_wh_map, "[")
+    rh_box_points = extract_positions(exp_wh_map, "]")
+    wall_points = extract_positions(exp_wh_map, "#")
+    warehouse_data = (lh_box_points, rh_box_points, wall_points)
+    exp_wh_map[position[0]][position[1]] = "."
 
-def calculate_gps(warehouse_map):
+    for move in robot_moves:
+        box_eval = evaluate_box_moves(warehouse_data, position, move, list(()))
+        if box_eval is not None:
+            position = update_position(position, DIRECTIONS[move])
+            if len(box_eval) > 0:
+                move_boxes(box_eval, move, lh_box_points, rh_box_points)
+                warehouse_data = (lh_box_points, rh_box_points, wall_points)
+
+    gps_score = 0
+    for position in lh_box_points:
+        gps_score += 100 * position[0] + position[1]
+    print(f"Part II Sum of all box's GPS = {gps_score}")
+
+
+def evaluate_box_moves(warehouse_data, position, move, moving_box_points=set(())):
+    """Evaluate whether the move can be made from the position and return the list of box_points if it can
+    this is a little inefficient since the moving_box_points can contain duplicate entries
+    clean_list() is called to reduce the size of the list
+    """
+    lh_box_points, rh_box_points, wall_points = warehouse_data
+    new_position = update_position(position, DIRECTIONS[move])
+    if new_position in wall_points:
+        return None
+    elif new_position in lh_box_points or new_position in rh_box_points:
+        moving_box_points.append(new_position)
+        if move in ("^", "v"):
+            if new_position in lh_box_points:
+                alt_position = update_position(new_position, DIRECTIONS[">"])
+            else:
+                alt_position = update_position(new_position, DIRECTIONS["<"])
+            moving_box_points.append(alt_position)
+            box_evaluation = evaluate_box_moves(
+                warehouse_data, new_position, move, moving_box_points
+            )
+            if box_evaluation is not None:
+                moving_box_points.extend(box_evaluation)
+            else:
+                return None
+            box_evaluation = evaluate_box_moves(
+                warehouse_data, alt_position, move, moving_box_points
+            )
+            if box_evaluation is not None:
+                moving_box_points.extend(box_evaluation)
+            else:
+                return None
+            return clean_list(moving_box_points)
+        else:
+            box_evaluation = evaluate_box_moves(
+                warehouse_data, new_position, move, moving_box_points
+            )
+            if box_evaluation is not None:
+                moving_box_points.extend(box_evaluation)
+                return clean_list(moving_box_points)
+            else:
+                return None
+    else:
+        return clean_list(moving_box_points)
+
+
+def move_boxes(moving_boxes, move, lh_box_points, rh_box_points):
+    """Update the left and right hand box points with the moved boxes"""
+    lh_box_points = update_box_positions(moving_boxes, lh_box_points, move)
+    rh_box_points = update_box_positions(moving_boxes, rh_box_points, move)
+    return lh_box_points, rh_box_points
+
+
+def update_box_positions(moving_boxes, box_positions, move):
+    """Update the positions of the moving boxes in the list of box positions"""
+    for index, box in enumerate(box_positions):
+        if box in moving_boxes:
+            box_positions[index] = update_position(box, DIRECTIONS[move])
+    return box_positions
+
+
+def calculate_gps(warehouse_map, item="O"):
     """calculate the Goods Positioning System of all the boxes in the map"""
-    box_positions = get_box_positions(warehouse_map)
+    box_positions = extract_positions(warehouse_map, item)
     gps_total = 0
     for position in box_positions:
         gps_total += 100 * position[0] + position[1]
     return gps_total
-
-
-def get_box_positions(warehouse_map):
-    """Return all the positions of all the boxes on the map"""
-    box_positions = []
-    for y, row in enumerate(warehouse_map):
-        for x, value in enumerate(row):
-            if value == "O":
-                box_positions.append((y, x))
-    return box_positions
 
 
 def move_box(warehouse_map, source, destination):
@@ -98,7 +169,7 @@ def position_on_map(warehouse_map, position):
 def update_position(position, vector, multiplier=1):
     """Return the new coordinates adding the position and the delta multiplied by the multiplier"""
     delta = multiply_tuple(vector, multiplier)
-    return (position[0] + delta[0], position[1] + delta[1])
+    return [position[0] + delta[0], position[1] + delta[1]]
 
 
 def multiply_tuple(input_tuple, multiplier):
@@ -116,6 +187,88 @@ def locate_robot(warehouse_map):
             if value == "@":
                 robot_position = (y, x)
                 return robot_position
+
+
+def extract_positions(warehouse_map, item):
+    """return a set of all the positions where the item is found"""
+    positions = list(())
+    for y, row in enumerate(warehouse_map):
+        for x, value in enumerate(row):
+            if value == item:
+                positions.append([y, x])
+    return positions
+
+
+def expand_map(warehouse_map):
+    """Expand the map according to the rules '#' > '##', '.' > '..', 'O' > '[]', '@' > '@.'"""
+    new_map = []
+    for y, row in enumerate(warehouse_map):
+        new_map.append([])
+        for x, value in enumerate(row):
+            if value == ".":
+                new_map[-1].extend([".", "."])
+            elif value == "#":
+                new_map[-1].extend(["#", "#"])
+            elif value == "O":
+                new_map[-1].extend(["[", "]"])
+            elif value == "@":
+                new_map[-1].extend(["@", "."])
+    return new_map
+
+
+def display_map(warehouse_map):
+    """Display the map"""
+    for row in warehouse_map:
+        print("".join(row))
+
+
+def display_warehouse(warehouse_data):
+    """Display the warehouse from the data"""
+    lh_box_points, rh_box_points, wall_points = warehouse_data
+    warehouse_height, warehouse_width = 0, 0
+    for wall_point in wall_points:
+        if wall_point[0] > warehouse_height:
+            warehouse_height = wall_point[0]
+        if wall_point[1] > warehouse_width:
+            warehouse_width = wall_point[1]
+    warehouse_width += 1
+    warehouse_height += 1
+    new_warehouse = [
+        ["." for i in range(warehouse_width)] for j in range(warehouse_height)
+    ]
+    for point in lh_box_points:
+        y, x = point
+        new_warehouse[y][x] = "["
+    for point in rh_box_points:
+        y, x = point
+        new_warehouse[y][x] = "]"
+    for point in wall_points:
+        y, x = point
+        new_warehouse[y][x] = "#"
+    display_map(new_warehouse)
+
+
+def clean_list(input_list):
+    """remove duplicates from the input_list"""
+    if input_list is None:
+        return None
+    output_list = []
+    for item in input_list:
+        if item not in output_list:
+            output_list.append(item)
+    return output_list
+
+
+def execute_tests(warehouse_data):
+    """Execture defined tests"""
+    print(f"TEST [1,3],'<' {evaluate_box_moves(warehouse_data,[1,3],'<',list(()))}")
+    print(f"TEST [1,3],'>' {evaluate_box_moves(warehouse_data,[1,3],'>',list(()))}")
+    print(f"TEST [1,5],'>' {evaluate_box_moves(warehouse_data,[1,5],'>',list(()))}")
+    print(f"TEST [3,8],'<' {evaluate_box_moves(warehouse_data,[3,8],'<',list(()))}")
+    print(f"TEST [2,6],'^' {evaluate_box_moves(warehouse_data,[2,6],'^',list(()))}")
+    print(f"TEST [2,6],'v' {evaluate_box_moves(warehouse_data,[2,6],'v',list(()))}")
+
+    return None
 
 
 def process_input_data(data):
