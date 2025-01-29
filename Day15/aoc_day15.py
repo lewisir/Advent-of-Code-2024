@@ -272,7 +272,7 @@ def execute_tests(warehouse_data):
 
 
 def process_input_data(data):
-    """ "Process the input data to extract the map of the warehouse and the list of robot moves"""
+    """Process the input data to extract the map of the warehouse and the list of robot moves"""
     warehouse_data = []
     robot_moves_data = ""
     for line in data:
